@@ -42,7 +42,7 @@ const loginUser = asyncHandler(async (req, res) => {
     const isMatch = await bcrypt.compare(password, userLogin.password);
     if (isMatch) {
       const token = await generateToken(userLogin._id);
-      console.log(token);
+      // console.log(token);
       return res.status(201).json({
         _id: userLogin._id,
         jwt: token,
