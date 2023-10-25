@@ -5,7 +5,6 @@ const cors = require("cors");
 const { Server } = require("socket.io");
 const dotenv = require("dotenv");
 const userRouter = require("./routers/userRouter");
-const cookieParser = require("cookie-parser");
 
 dotenv.config();
 const port = process.env.PORT || 8080;
@@ -14,7 +13,6 @@ require("./db/mongoose");
 app.use(cors());
 app.use(express.json());
 app.use("/api/user", userRouter);
-app.use(cookieParser());
 
 // app.use(function(req, res, next) {
 //   res.header('Access-Control-Allow-Origin', '*');
