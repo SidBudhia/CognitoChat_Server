@@ -27,7 +27,7 @@ const signUpUser = asyncHandler(async (req, res) => {
 
     return res.status(201).json("Registration Successful");
   } catch (err) {
-    console.error("Error Login user: ", err);
+    console.error("Error SignUp user: ", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
