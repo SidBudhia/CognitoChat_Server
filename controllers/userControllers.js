@@ -4,71 +4,62 @@ const { generateToken } = require("../auth/jwtToken");
 const bcrypt = require("bcrypt");
 
 const signUpUser = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
-  if (!name || !email || !password) {
-    res.status(400);
-    throw new Error("Please Enter all the Fields");
-  }
+  try {
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+      return res.status(400).json("Please Enter all the Fields");
+    }
 
-  const userExists = await User.findOne({ email });
-  if (userExists) {
-    res.status(400).json("User already exists");
-  }
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json("User already exists");
+    }
 
-  const newUser = await User.create({
-    name,
-    email,
-    password,
-  });
-  if (newUser) {
-    res.status(201).json("Registration Successful");
-  } else {
-    res.status(400);
-    throw new Error("Failed to Create New User");
+    const newUser = await User.create({
+      name,
+      email,
+      password,
+    });
+
+    if (!newUser) {
+      res.status(400).json("Failed to Create New User");
+    }
+
+    return res.status(201).json("Registration Successful");
+  } catch (err) {
+    console.error("Error Login user: ", err);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
 const loginUser = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    res.status(400);
-    throw new Error("Please Enter all the Fields");
-  }
-
-  const userLogin = await User.findOne({ email });
-
-  if (userLogin) {
-    const isMatch = await bcrypt.compare(password, userLogin.password);
-    if (isMatch) {
-      const token = await generateToken(userLogin._id);
-      // console.log(token);
-      return res.status(201).json({
-        _id: userLogin._id,
-        jwt: token,
-        maxAge: 25892000000
-      })
-    } else {
-      res.status(400).json("Invalid Credentials");
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json("Please Enter all the Fields");
     }
-  } else {
-    res.status(400).json("User Not Found");
+
+    const userLogin = await User.findOne({ email });
+    if (!userLogin) {
+      return res.status(400).json("User Not Found");
+    }
+
+    const isMatch = bcrypt.compare(password, userLogin.password);
+    if (!isMatch) {
+      return res.status(400).json("Invalid Credentials");
+    }
+
+    const token = await generateToken(userLogin._id);
+    // console.log(token);
+    return res.status(201).json({
+      _id: userLogin._id,
+      jwt: token,
+      maxAge: 25892000000,
+    });
+  } catch (err) {
+    console.error("Error Login user: ", err);
+    res.status(500).json("Internal server error");
   }
 });
 
-const authUser = async (req, res) => {
-  try {
-    const _id = req.params.id;
-    const user = await User.find({ _id });
-    if(user!==null) {
-      res.status(200).json("User Found");
-    }
-    else {
-      res.status(400).json("User Not Found");
-    }
-  } catch (error) {
-    res.status(400).json(error);
-  }
-};
-
-module.exports = { signUpUser, loginUser, authUser };
+module.exports = { signUpUser, loginUser };
